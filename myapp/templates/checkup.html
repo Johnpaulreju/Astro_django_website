@@ -1,0 +1,270 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'assets/styles.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+
+    <!-- Bootstrap Datepicker JS -->
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+</head>
+
+<body>
+    <nav class="w-100 navbar navbar-expand-lg navbar-light bg-primary">
+        <div class="container">
+            <a class="navbar-brand text-white fw-bold" href="/">Astro Medicare Laboratory</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/Dashboard/{{ unique_id }}/">Dashboard</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button"
+                            data-bs-toggle="dropdown">
+                            Welcome, {{ user_profile.user.username }} 👋
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile/{{ unique_id }}/">Profile</a></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <p>Filters: </p>
+        <!-- Search Filters -->
+        <div class="row mb-3 d-flex align-items-center">
+            <!-- Name Input (Only Alphabets) -->
+            <div class="col-md-4">
+                <input type="text" id="searchName" class="form-control" placeholder="Search by Name"
+                    oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
+            </div>
+
+            <!-- Test Type Dropdown with Checkboxes -->
+            <!-- <div class="col-md-4">
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle w-100" type="button" id="testDropdownBtn"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Select Test(s)
+                    </button>
+                    <ul class="dropdown-menu p-3" style="width: 100%;" id="testDropdown">
+                        {% for test in available_tests %}
+                        <li>
+                            <input type="checkbox" class="test-checkbox" value="{{ test.name }}"> {{ test.name }} - ₹{{
+                            test.price }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div> -->
+
+            <!-- Date Picker -->
+            <div class="col-md-4 d-flex gap-2">
+                <input type="date" id="startDate" class="form-control">
+                <input type="date" id="endDate" class="form-control mt-2">
+            </div>
+            <div class="col-md-4 text-center mt-3">
+                <button class="btn btn-primary" onclick="filterAppointments()">Apply Filters</button>
+            </div>
+        </div>
+
+        <!-- Filter Button -->
+
+
+
+
+        <h3 class="p-3 bg-white rounded border shadow-sm w-100">Upcoming Test Appointments</h3>
+
+        <!-- Appointment Cards Container -->
+        <div class="appointment-card-container">
+            {% if todays_appointments %}
+            <p class="appointment-count">Appointments found: {{ todays_appointments|length }}</p>
+            <div class="appointment-list">
+                {% for appointment in todays_appointments %}
+                <div class="appointment-card" data-id="{{ appointment.id }}" onclick="fetchAppointmentDetails(this)">
+                    <h3 class="appointment-name">{{ appointment.name }}</h3>
+                    <p class="appointment-date"><strong>Date:</strong> {{ appointment.date }}</p>
+                    <p class="appointment-test"><strong>Test Type:</strong> {{ appointment.test_type }}</p>
+                    <p class="appointment-price"><strong>Price:</strong> ₹{{ appointment.total_price }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-appointments">No appointments found.</p>
+            {% endif %}
+        </div>
+
+
+
+
+        <!-- Appointment Modal -->
+        <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="appointmentModalLabel">Appointment Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="updateAppointmentForm" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" id="appointmentId" name="appointmentId">
+                            <div class="mb-3">
+                                <label for="modalName" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="modalName" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="modalDate" class="form-label">Date</label>
+                                <input type="text" class="form-control" id="modalDate" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="modalTime" class="form-label">Time</label>
+                                <input type="text" class="form-control" id="modalTime" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="modalTests" class="form-label">Tests</label>
+                                <input type="text" class="form-control" id="modalTests" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="modalTotalPrice" class="form-label">Total Price</label>
+                                <input type="text" class="form-control" id="modalTotalPrice" readonly>
+                            </div>
+
+                            <!-- Lab Report Section -->
+                            <div id="labReportSection" class="mb-3" style="display: none;">
+                                <label class="form-label">Lab Report</label>
+                                <a href="#" id="labReportLink" class="btn btn-sm btn-success" target="_blank">Download
+                                    Report</a>
+                                <input type="file" id="labReportUpload" name="labreport" class="form-control mt-2">
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Update</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script>
+            $(document).ready(function () {
+                // Fetch appointment details and open modal
+                $('.appointment-card').on('click', function () {
+                    let appointmentId = $(this).data('id');
+                    $('#appointmentId').val(appointmentId);
+
+                    $.get(`/get-appointment/${appointmentId}/`, function (data) {
+                        $('#modalName').val(data.name);
+                        $('#modalDate').val(data.date);
+                        $('#modalTime').val(data.hour);
+                        $('#modalTests').val(data.test_type);
+                        $('#modalTotalPrice').val(data.total_price);
+
+                        if (data.labreport) {
+                            $('#labReportSection').show();
+                            $('#labReportLink').attr('href', data.labreport).text("Download Report").show();
+                        } else {
+                            $('#labReportSection').show();
+                            $('#labReportLink').hide();
+                        }
+
+                        $('#appointmentModal').modal('show');
+                    });
+                });
+
+                // Handle appointment update
+                $('#updateAppointmentForm').submit(function (e) {
+                    e.preventDefault();
+
+                    let appointmentId = $('#appointmentId').val();
+                    if (!appointmentId) {
+                        alert("Error: Appointment ID is missing!");
+                        return;
+                    }
+
+                    let formData = new FormData(this);
+                    let fileInput = $('#labReportUpload')[0].files[0];
+                    if (fileInput) {
+                        formData.append("labreport", fileInput);
+                    }
+
+                    let csrfToken = $('input[name="csrfmiddlewaretoken"]').val(); // Correct CSRF token handling
+
+                    $.ajax({
+                        type: "POST",
+                        url: `/upload_lab_report/${appointmentId}/`,  // Ensure this matches the `urls.py` pattern
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        headers: {
+                            "X-CSRFToken": csrfToken
+                        },
+                        success: function (response) {
+                            alert(response.message);
+                            if (response.success) {
+                                location.reload();
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Upload failed:", xhr.responseText);
+                        }
+                    });
+
+                });
+            });
+
+        </script>
+        <script>
+            function filterAppointments() {
+                let searchName = document.getElementById("searchName").value.trim();
+                let startDate = document.getElementById("startDate").value;
+                let endDate = document.getElementById("endDate").value;
+
+                let selectedTests = [];
+                document.querySelectorAll(".test-checkbox:checked").forEach(checkbox => {
+                    selectedTests.push(checkbox.value);
+                });
+
+                // Construct query parameters
+                let queryParams = new URLSearchParams();
+                if (searchName) queryParams.append("name", searchName);
+                if (startDate) queryParams.append("start_date", startDate);
+                if (endDate) queryParams.append("end_date", endDate);
+                if (selectedTests.length > 0) {
+                    selectedTests.forEach(test => queryParams.append("tests", test));
+                }
+
+                // Reload the page with new filters
+                let newUrl = window.location.origin + window.location.pathname;
+                if (queryParams.toString()) {
+                    newUrl += "?" + queryParams.toString();
+                }
+                window.location.href = newUrl;
+            }
+
+        </script>
+    </div>
+</body>
+
+</html>

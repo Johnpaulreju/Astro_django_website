@@ -1,0 +1,209 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.navbar {
+    padding: 15px;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.navbar-nav .nav-link {
+    font-weight: bold;
+}
+
+.offer-img {
+    height: 200px;
+    object-fit: cover;
+}
+
+.carousel-item img {
+    height: 500px;
+    object-fit: cover;
+}
+
+.carousel-caption {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+section {
+    padding: 40px 0;
+    text-align: center;
+}
+
+h1, h2 {
+    color: #007bff;
+}
+
+.btn {
+    width: 100%;
+    max-width: 200px;
+}
+
+.card {
+    border-radius: 10px;
+    border: none;
+}
+
+.card h2 {
+    color: #007bff;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+.form-control {
+    border-radius: 5px;
+}
+
+.btn-primary {
+    font-weight: bold;
+}
+
+
+.card {
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+}
+
+.form-label {
+    display: block;
+    text-align: left;
+}
+
+.small-placeholder::placeholder {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    font-weight: bold;
+}
+
+
+.text-muted {
+    font-size: 0.9rem;
+}
+
+
+
+.test-result-card {
+    background-color: #ffffff;
+    border: none;
+    border-radius: 10px;
+}
+
+/* Table styles */
+.test-result-table {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.test-result-table th, .test-result-table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.test-result-table th {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+.test-result-table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f2f2f2;
+}
+
+.test-result-btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.test-result-btn-primary:hover {
+    background-color: #0056b3;
+}
+
+
+
+.flatpickr-calendar {
+    max-width: 350px !important;
+    z-index: 9999 !important; /* Ensures it stays on top */
+}
+
+.flatpickr-months svg {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+
+
+.appointment-card-container {
+    width: 80%;
+    margin: 20px auto;
+    text-align: center;
+}
+
+.appointment-count {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.appointment-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+.appointment-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    width: 280px;
+    text-align: left;
+    border: 1px solid #ddd;
+    transition: transform 0.3s ease;
+}
+
+.appointment-card:hover {
+    transform: scale(1.05);
+}
+
+.appointment-name {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.appointment-date,
+.appointment-test,
+.appointment-price {
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+.no-appointments {
+    font-size: 18px;
+    color: red;
+    font-weight: bold;
+}
+
+.test_result_user{
+    flex: 0 0 auto;
+    width: 100%;
+}
