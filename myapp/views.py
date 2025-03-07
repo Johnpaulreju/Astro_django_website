@@ -7,6 +7,8 @@ from .forms import RegisterForm , LoginForm ,LabReportForm
 from django.utils.timezone import now
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
+
 
 
 
@@ -194,11 +196,16 @@ def test_appointment_view(request, unique_id):
             {"name": "Blood C/S", "price": 500},
         ]
 
-        # ✅ Fetch upcoming test appointments (date >= today)
+        # # ✅ Fetch upcoming test appointments (date >= today)
+        # upcoming_appointments = TestBooking.objects.filter(
+        #     date__gte=now().date(),
+        #     booked_by=username  # Filter by the username stored in `booked_by`
+        # ).order_by('date')
         upcoming_appointments = TestBooking.objects.filter(
-            date__gte=now().date(),
-            booked_by=username  # Filter by the username stored in `booked_by`
-        ).order_by('date')
+                    date__gte=now().date(),
+                    booked_by=username
+                ).filter(Q(labreport="") | Q(labreport__isnull=True)).order_by('date')
+        print(upcoming_appointments)
         if request.method == 'POST':
             # ✅ Retrieve form data
             name = request.POST.get('name')

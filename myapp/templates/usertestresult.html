@@ -50,6 +50,7 @@
                     <table class="test-result-table test-result-table-striped">
                         <thead>
                             <tr>
+                                <th>Name</th>
                                 <th>Date</th>
                                 <th>Test Name</th>
                                 <th>Action</th>
@@ -58,6 +59,7 @@
                         <tbody id="table-body" class="table-light">
                             {% for test in test_results %}
                             <tr>
+                                <td>{{ test.name }}</td>
                                 <td>{{ test.date }}</td>
                                 <td>{{ test.test_type }}</td>
                                 <td>

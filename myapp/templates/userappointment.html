@@ -102,42 +102,42 @@
 
 
                                 <ul class="dropdown-menu p-3" style="width: 100%;">
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="250"> LDH -
-                                        ₹250</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="150"> BLOOD
-                                        R/E (HB, TC, DC, ESR - Each Test) - ₹150</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="180"> CBC -
-                                        ₹180</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="200">
-                                        PLATELETS COUNT - ₹200</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="200"> VDRL
-                                        (Rapid Test) - ₹200</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="300"> HBs Ag
-                                        (Rapid Test) - ₹300</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="350"> HIV-1&2
-                                        (Rapid Test) - ₹350</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="400"> WIDAL
-                                        (Tube Test) - ₹400</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="100"> Blood
-                                        Group & RH - ₹100</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="100"> Serum
-                                        Calcium - ₹100</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="270"> Renal
-                                        Function Tests (RFT) - ₹270</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="150"> ECG -
-                                        ₹150</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="100"> Serum
-                                        Creatinine - ₹100</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="380"> Liver
-                                        Function Tests (LFT) - ₹380</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="170"> X-Ray
-                                        (Chest) - ₹170</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="100"> Dental
-                                        X-Ray - ₹100</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="950"> Vitamin
-                                        D3 - ₹950</li>
-                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="500"> Blood
-                                        C/S - ₹500</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="250"
+                                            data-name="LDH"> LDH - ₹250</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="150"
+                                            data-name="BLOOD R/E"> BLOOD R/E (HB, TC, DC, ESR - Each Test) - ₹150</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="180"
+                                            data-name="CBC"> CBC - ₹180</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="200"
+                                            data-name="PLATELETS COUNT"> PLATELETS COUNT - ₹200</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="200"
+                                            data-name="VDRL"> VDRL (Rapid Test) - ₹200</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="300"
+                                            data-name="HBs Ag"> HBs Ag (Rapid Test) - ₹300</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="350"
+                                            data-name="HIV-1&2"> HIV-1&2 (Rapid Test) - ₹350</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="400"
+                                            data-name="WIDAL"> WIDAL (Tube Test) - ₹400</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="100"
+                                            data-name="Blood Group & RH"> Blood Group & RH - ₹100</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="100"
+                                            data-name="Serum Calcium"> Serum Calcium - ₹100</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="270"
+                                            data-name="RFT"> Renal Function Tests (RFT) - ₹270</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="150"
+                                            data-name="ECG"> ECG - ₹150</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="100"
+                                            data-name="Serum Creatinine"> Serum Creatinine - ₹100</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="380"
+                                            data-name="LFT"> Liver Function Tests (LFT) - ₹380</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="170"
+                                            data-name="X-Ray"> X-Ray (Chest) - ₹170</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="100"
+                                            data-name="Dental X-Ray"> Dental X-Ray - ₹100</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="950"
+                                            data-name="Vitamin D3"> Vitamin D3 - ₹950</li>
+                                    <li><input type="checkbox" class="test-checkbox" name="tests[]" value="500"
+                                            data-name="Blood C/S"> Blood C/S - ₹500</li>
                                 </ul>
                             </div>
                             <!-- Show selected tests -->
@@ -182,6 +182,35 @@
                     total += parseInt($(this).val());
                 });
                 $("#total-price").text(total);
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const checkboxes = document.querySelectorAll(".test-checkbox");
+            const selectedTestsList = document.getElementById("selected-tests-list");
+            const totalPriceElement = document.getElementById("total-price");
+
+            function updateSelectedTests() {
+                let selectedTests = [];
+                let totalPrice = 0;
+
+                checkboxes.forEach((checkbox) => {
+                    if (checkbox.checked) {
+                        selectedTests.push(checkbox.getAttribute("data-name"));
+                        totalPrice += parseInt(checkbox.value, 10);
+                    }
+                });
+
+                selectedTestsList.innerHTML = selectedTests.length
+                    ? `<strong>Selected Tests:</strong> ${selectedTests.join(", ")}`
+                    : "No tests selected";
+
+                totalPriceElement.textContent = totalPrice;
+            }
+
+            checkboxes.forEach((checkbox) => {
+                checkbox.addEventListener("change", updateSelectedTests);
             });
         });
     </script>
