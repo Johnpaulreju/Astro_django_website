@@ -14,8 +14,62 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
 
     <!-- Bootstrap Datepicker JS -->
+    <style>
+        .selected-tests {
+            min-height: 40px;
+            padding: 5px;
+            background: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+
+        /* Define colors for different statuses */
+        .status-badge.upcoming {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .status-badge.samplecollected {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .status-badge.processing {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .status-badge.completed {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-badge.reportready {
+            background-color: #6610f2;
+            color: white;
+        }
+
+        .status-badge.delivered {
+            background-color: #20c997;
+            color: white;
+        }
+
+        .status-badge.cancelled {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 
 </head>
 
@@ -56,23 +110,6 @@
                     oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')">
             </div>
 
-            <!-- Test Type Dropdown with Checkboxes -->
-            <!-- <div class="col-md-4">
-                <div class="dropdown">
-                    <button class="btn btn-outline-primary dropdown-toggle w-100" type="button" id="testDropdownBtn"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Select Test(s)
-                    </button>
-                    <ul class="dropdown-menu p-3" style="width: 100%;" id="testDropdown">
-                        {% for test in available_tests %}
-                        <li>
-                            <input type="checkbox" class="test-checkbox" value="{{ test.name }}"> {{ test.name }} - ₹{{
-                            test.price }}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div> -->
 
             <!-- Date Picker -->
             <div class="col-md-4 d-flex gap-2">
@@ -81,6 +118,8 @@
             </div>
             <div class="col-md-4 text-center mt-3">
                 <button class="btn btn-primary" onclick="filterAppointments()">Apply Filters</button>
+                <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
+
             </div>
         </div>
 
@@ -97,8 +136,17 @@
             <p class="appointment-count">Appointments found: {{ todays_appointments|length }}</p>
             <div class="appointment-list">
                 {% for appointment in todays_appointments %}
-                <div class="appointment-card" data-id="{{ appointment.id }}" onclick="fetchAppointmentDetails(this)">
-                    <h3 class="appointment-name">{{ appointment.name }}</h3>
+                <div class="appointment-card p-3" data-id="{{ appointment.id }}"
+                    onclick="fetchAppointmentDetails(this)">
+                    <!-- Name on the left, Stage on the right -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="appointment-name">{{ appointment.name }}</h3>
+                        <span class="status-badge {{ appointment.get_stage_display|lower|cut:' ' }}">
+                            {{ appointment.get_stage_display }}
+                        </span>
+                    </div>
+
+                    <!-- Appointment details below -->
                     <p class="appointment-date"><strong>Date:</strong> {{ appointment.date }}</p>
                     <p class="appointment-test"><strong>Test Type:</strong> {{ appointment.test_type }}</p>
                     <p class="appointment-price"><strong>Price:</strong> ₹{{ appointment.total_price }}</p>
@@ -108,6 +156,8 @@
             {% else %}
             <p class="no-appointments">No appointments found.</p>
             {% endif %}
+
+
         </div>
 
 
@@ -146,6 +196,26 @@
                                 <label for="modalTotalPrice" class="form-label">Total Price</label>
                                 <input type="text" class="form-control" id="modalTotalPrice" readonly>
                             </div>
+                            <div class="mb-3">
+                                <label for="modalStage" class="form-label">Stage</label>
+                                <div class="input-group">
+                                    <select class="form-control" id="modalStage" name="stage">
+                                        <option value="upcoming">Upcoming</option>
+                                        <option value="sample_collected">Sample Collected</option>
+                                        <option value="processing">Processing</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="report_ready">Report Ready</option>
+                                        <option value="delivered">Delivered</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                    <span class="input-group-text">
+                                        <i class="fas fa-chevron-down"></i> <!-- FontAwesome dropdown icon -->
+                                    </span>
+                                </div>
+                            </div>
+
+
+
 
                             <!-- Lab Report Section -->
                             <div id="labReportSection" class="mb-3" style="display: none;">
@@ -168,6 +238,11 @@
 
         <!-- Scripts -->
         <script>
+            function clearFilters() {
+                // Reload the page with no filters, fetching today's appointments
+                window.location.href = window.location.origin + window.location.pathname;
+            }
+
             $(document).ready(function () {
                 // Fetch appointment details and open modal
                 $('.appointment-card').on('click', function () {
@@ -180,6 +255,8 @@
                         $('#modalTime').val(data.hour);
                         $('#modalTests').val(data.test_type);
                         $('#modalTotalPrice').val(data.total_price);
+                        $('#modalStage').val(data.stage);  // ✅ Add this line
+
 
                         if (data.labreport) {
                             $('#labReportSection').show();
@@ -203,17 +280,25 @@
                         return;
                     }
 
-                    let formData = new FormData(this);
+                    let formData = new FormData();
+                    let stage = $('#modalStage').val();
                     let fileInput = $('#labReportUpload')[0].files[0];
+
+                    // Append CSRF token
+                    let csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+                    formData.append("csrfmiddlewaretoken", csrfToken);
+
+                    // Append stage (always update stage)
+                    formData.append("stage", stage);
+
+                    // Append lab report ONLY if a file is selected
                     if (fileInput) {
                         formData.append("labreport", fileInput);
                     }
 
-                    let csrfToken = $('input[name="csrfmiddlewaretoken"]').val(); // Correct CSRF token handling
-
                     $.ajax({
                         type: "POST",
-                        url: `/upload_lab_report/${appointmentId}/`,  // Ensure this matches the `urls.py` pattern
+                        url: `/upload_lab_report/${appointmentId}/`,  // Ensure this matches your `urls.py`
                         data: formData,
                         processData: false,
                         contentType: false,
@@ -228,14 +313,35 @@
                         },
                         error: function (xhr, status, error) {
                             console.error("Upload failed:", xhr.responseText);
+                            alert("Error: " + xhr.responseText);
                         }
                     });
-
                 });
             });
 
-        </script>
-        <script>
+            // Mapping backend values to human-readable labels
+            const stageLabels = {
+                upcoming: "Upcoming",
+                sample_collected: "Sample Collected",
+                processing: "Processing",
+                completed: "Completed",
+                report_ready: "Report Ready",
+                delivered: "Delivered",
+                cancelled: "Cancelled"
+            };
+
+            // Apply to all elements with class "status-badge"
+            document.addEventListener("DOMContentLoaded", function () {
+                document.querySelectorAll(".status-badge").forEach(element => {
+                    const stageValue = element.getAttribute("data-stage"); // Get the raw stage value
+                    if (stageLabels[stageValue]) {
+                        element.textContent = stageLabels[stageValue]; // Set human-readable label
+                        element.classList.add(stageValue); // Apply CSS class for styling
+                    }
+                });
+            });
+
+
             function filterAppointments() {
                 let searchName = document.getElementById("searchName").value.trim();
                 let startDate = document.getElementById("startDate").value;

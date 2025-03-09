@@ -65,7 +65,7 @@
                                 <input type="checkbox" id="rememberMe">
                                 <label for="rememberMe" class="ms-2">Remember me</label>
                             </div>
-                            <a href="#" class="text-decoration-none text-muted">Forgot password?</a>
+                            <a href="/forgot-password/" class="text-decoration-none text-muted">Forgot password?</a>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
                         <p class="text-center mt-3">
@@ -84,30 +84,48 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            const emailInput = document.getElementById("email");
+            const rememberMeCheckbox = document.getElementById("rememberMe");
+
+            // Load stored email if available
+            if (localStorage.getItem("rememberedEmail")) {
+                emailInput.value = localStorage.getItem("rememberedEmail");
+                rememberMeCheckbox.checked = true;
+            }
+
             document.getElementById("loginForm").addEventListener("submit", async function (event) {
                 event.preventDefault();
 
-                const email = document.getElementById("email").value;
+                const email = emailInput.value;
                 const password = document.getElementById("password").value;
+                const rememberMe = rememberMeCheckbox.checked;
                 const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
                 const errorMessage = document.getElementById("errorMessage");
+
+                // Store email in localStorage if "Remember Me" is checked
+                if (rememberMe) {
+                    localStorage.setItem("rememberedEmail", email);
+                } else {
+                    localStorage.removeItem("rememberedEmail");
+                }
 
                 try {
                     const response = await fetch("/login/", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/x-www-form-urlencoded",
-                            "X-CSRFToken": csrfToken  // Ensures CSRF token is included
+                            "X-CSRFToken": csrfToken
                         },
                         body: new URLSearchParams({
                             email: email,
-                            password: password
+                            password: password,
+                            remember_me: rememberMe
                         }),
-                        credentials: "include" // Ensures session cookies are sent
+                        credentials: "include"
                     });
 
                     if (response.redirected) {
-                        window.location.href = response.url;  // Redirect user if login is successful
+                        window.location.href = response.url;
                     } else {
                         const data = await response.json();
                         errorMessage.textContent = data.error || "Invalid email or password.";
@@ -120,6 +138,7 @@
                 }
             });
         });
+
     </script>
 
 

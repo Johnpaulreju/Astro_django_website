@@ -21,12 +21,72 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
+        .toady-appointment-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+        }
+
+        .appointment-list-box {
+            background: rgba(0, 0, 0, 0.7);
+            /* Black with 70% transparency */
+            padding: 20px;
+            border-radius: 10px;
+            /* color: rgb(0, 0, 0);  */
+            /* Ensures text is visible */
+        }
+
+
         .selected-tests {
             min-height: 40px;
             padding: 5px;
             background: #f8f9fa;
             border: 1px solid #ced4da;
             border-radius: 5px;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+
+        /* Define colors for different statuses */
+        .status-badge.upcoming {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .status-badge.samplecollected {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .status-badge.processing {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .status-badge.completed {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-badge.reportready {
+            background-color: #6610f2;
+            color: white;
+        }
+
+        .status-badge.delivered {
+            background-color: #20c997;
+            color: white;
+        }
+
+        .status-badge.cancelled {
+            background-color: #dc3545;
+            color: white;
         }
     </style>
 </head>
@@ -68,7 +128,7 @@
             <div class="col-md-6">
                 <div class="card shadow p-4">
                     <h2 class="text-center mb-4">Book a Test</h2>
-                    <form method="POST">
+                    <form id="booking-form" method="POST">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label class="form-label">Name</label>
@@ -81,6 +141,7 @@
                         <div class="mb-3">
                             <label class="form-label">Select Hour</label>
                             <select name="hour" class="form-control" required>
+                                <option value="">Select a time</option>
                                 <option value="7:30am - 8:30am">7:30 AM - 8:30 AM</option>
                                 <option value="8:30am - 9:30am">8:30 AM - 9:30 AM</option>
                                 <option value="9:30am - 10:30am">9:30 AM - 10:30 AM</option>
@@ -148,10 +209,63 @@
                         <button type="submit" class="btn btn-primary w-100">Book Now</button>
                     </form>
                 </div>
+
             </div>
+            <div class="appointment-list-box col-md-6">
+                <h3 class="p-3 bg-white rounded border shadow-sm">Today's Appointments</h3>
+                <div class="appointment-list p-2">
+                    {% for appointment in today_appointments %}
+                    <div class="toady-appointment-card p-3 mb-3 appointment-card" data-bs-toggle="modal"
+                        data-bs-target="#appointmentModal-{{ appointment.id }}">
+                        <div class="d-flex justify-content-between">
+                            <h5>{{ appointment.name }}</h5>
+                            <span class="status-badge {{ appointment.get_stage_display|lower|cut:' ' }}">
+                                {{ appointment.get_stage_display }}
+                            </span>
+                            <!-- <span class="status-badge {{ appointment.stage }}">{{ appointment.stage }}</span> -->
+                        </div>
+
+                        <div class="d-flex mt-3 mb-0 justify-content-between">
+                            <p class="mb-0"><strong>Tests:</strong> {{ appointment.test_count }}</p>
+                            <p class="mb-0"><strong>Time:</strong> {{ appointment.hour }}</p>
+                            <p class="mb-0"><strong>Total Price:</strong> ₹{{ appointment.total_price }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Modal for each appointment -->
+                    <div class="modal fade" id="appointmentModal-{{ appointment.id }}" tabindex="-1"
+                        aria-labelledby="appointmentModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="appointmentModalLabel">Appointment Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p><strong>Booked For:</strong> {{ appointment.name }}</p>
+                                    <p><strong>Tests:</strong> {{ appointment.test_type }}</p>
+                                    <p><strong>Time:</strong> {{ appointment.hour }}</p>
+                                    <p><strong>Total Price:</strong> ₹{{ appointment.total_price }}</p>
+                                    <p><strong>Date of Test:</strong> {{ appointment.date }}</p>
+                                    <p><strong>Booked By:</strong> {{ appointment.booked_by }}</p>
+                                    <p><strong>Booking Date:</strong> {{ appointment.booked_on }}</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
         </div>
         <!-- Upcoming Test Appointments -->
-        <div class="row mt-4">
+        <div class="appointment-list-box row mt-4">
             <div class="col-12">
                 <h3 class="p-3 bg-white rounded border shadow-sm">Upcoming Test Appointments</h3>
                 <div class="row">
@@ -166,7 +280,7 @@
                         </div>
                     </div>
                     {% empty %}
-                    <p>No upcoming appointments.</p>
+                    <p style="color: white;"> No upcoming appointments.</p>
                     {% endfor %}
 
                 </div>
@@ -175,16 +289,152 @@
     </section>
 
     <script>
+        //----validation=------
+        document.getElementById("booking-form").addEventListener("submit", function (event) {
+            let valid = true;
+
+            // Name Validation
+            const nameInput = document.getElementById("name");
+            const nameError = document.getElementById("name-error");
+            if (nameInput.value.trim() === "") {
+                nameError.style.display = "block";
+                valid = false;
+            } else {
+                nameError.style.display = "none";
+            }
+
+            // Date Validation (Today to Next 30 Days)
+            const dateInput = document.getElementById("date");
+            const dateError = document.getElementById("date-error");
+            const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+            const maxDate = new Date();
+            maxDate.setDate(maxDate.getDate() + 30); // 30 days from today
+            const maxDateString = maxDate.toISOString().split("T")[0];
+
+            if (dateInput.value < today || dateInput.value > maxDateString) {
+                dateError.style.display = "block";
+                valid = false;
+            } else {
+                dateError.style.display = "none";
+            }
+
+            // Hour Validation
+            const hourSelect = document.getElementById("hour-select");
+            const hourError = document.getElementById("hour-error");
+            if (hourSelect.value === "" || hourSelect.value === "Select One") { // Ensure correct check
+                hourError.style.display = "block";
+                valid = false;
+            } else {
+                hourError.style.display = "none";
+            }
+
+
+            // Tests Validation (At least one should be checked)
+            const testCheckboxes = document.querySelectorAll(".test-checkbox");
+            const testError = document.getElementById("test-error");
+            let testSelected = false;
+            testCheckboxes.forEach((checkbox) => {
+                if (checkbox.checked) testSelected = true;
+            });
+
+            if (!testSelected) {
+                testError.style.display = "block";
+                valid = false;
+            } else {
+                testError.style.display = "none";
+            }
+
+            if (!valid) {
+                event.preventDefault(); // Stop form submission if validation fails
+            }
+        });
+
+        //----------date and time managment--------
+        document.addEventListener("DOMContentLoaded", function () {
+            const dateInput = document.querySelector("input[name='date']");
+            const timeSelect = document.querySelector("select[name='hour']");
+
+            function updateDateRestrictions() {
+                const today = new Date();
+                const maxDate = new Date();
+                maxDate.setMonth(maxDate.getMonth() + 1); // Limit selection to next 1 month
+
+                // Format dates as YYYY-MM-DD
+                const todayStr = today.toISOString().split("T")[0];
+                const maxDateStr = maxDate.toISOString().split("T")[0];
+
+                console.log("Setting min date:", todayStr, "and max date:", maxDateStr); // Debugging
+
+                // Set min and max attributes for date input
+                dateInput.setAttribute("min", todayStr);
+                dateInput.setAttribute("max", maxDateStr);
+            }
+
+            function updateTimeSlots() {
+                const selectedDate = new Date(dateInput.value);
+                const today = new Date();
+                const currentHour = today.getHours();
+
+                // Define time slot options
+                const timeSlots = [
+                    { label: "7:30 AM - 8:30 AM", startHour: 7 },
+                    { label: "8:30 AM - 9:30 AM", startHour: 8 },
+                    { label: "9:30 AM - 10:30 AM", startHour: 9 },
+                    { label: "10:30 AM - 11:30 AM", startHour: 10 },
+                    { label: "11:30 AM - 12:30 PM", startHour: 11 },
+                    { label: "12:30 PM - 1:30 PM", startHour: 12 },
+                    { label: "2:00 PM - 3:00 PM", startHour: 14 },
+                    { label: "3:00 PM - 4:00 PM", startHour: 15 },
+                    { label: "4:00 PM - 5:00 PM", startHour: 16 },
+                ];
+
+                // Clear existing options
+                timeSelect.innerHTML = '<option value="">Select a time</option>';
+                console.log("the current hour", currentHour);
+                // Filter and add valid time slots
+                timeSlots.forEach(slot => {
+                    if (selectedDate.toDateString() !== today.toDateString() || slot.startHour > (currentHour + 1)) {
+                        const option = document.createElement("option");
+                        option.value = slot.label;
+                        option.textContent = slot.label;
+                        timeSelect.appendChild(option);
+                    }
+                });
+            }
+
+            updateDateRestrictions();
+
+
+            dateInput.addEventListener("change", updateTimeSlots);
+        });
+
+
+        const stageLabels = {
+            upcoming: " Upcoming", sample_collected: "Sample Collected", processing: "Processing", completed: "Completed"
+            , report_ready: "Report Ready", delivered: "Delivered", cancelled: "Cancelled"
+        }; // Apply stage labels to elements 
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".status-badge").forEach(element => {
+                const stageValue = element.getAttribute("data-stage"); // Get raw stage value
+                if (stageLabels[stageValue]) {
+                    element.textContent = stageLabels[stageValue]; // Set human-readable label
+                    element.classList.add(stageValue); // Apply CSS class for styling
+                }
+            });
+        });
+
+        // jQuery: Calculate total price of selected tests
         $(document).ready(function () {
             $(".test-checkbox").change(function () {
-                var total = 0;
+                let total = 0;
                 $(".test-checkbox:checked").each(function () {
-                    total += parseInt($(this).val());
+                    total += parseInt($(this).val(), 10);
                 });
                 $("#total-price").text(total);
             });
         });
     </script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const checkboxes = document.querySelectorAll(".test-checkbox");
@@ -214,6 +464,7 @@
             });
         });
     </script>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
